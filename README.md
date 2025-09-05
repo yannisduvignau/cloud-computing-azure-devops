@@ -1,4 +1,6 @@
 # M1 Cloud Computing - Azure DevOps
+[URL DOC TP](https://m1cloud.hita.wtf/)
+
 Rendu : duvignau,[cloud-computing-azure-devops](https://github.com/yannisduvignau/cloud-computing-azure-devops)
 
 ## TP1 : 'Azure first steps'
@@ -18,8 +20,8 @@ Terraform from hashicorp/tap/terraform
     brew install hashicorp/tap/terraform
 ```
 
-### Encryption algorithm for generating an SSH key pair
-#### Why 'vous n'utiliserez PAS RSA'
+#### Encryption algorithm for generating an SSH key pair
+##### Why 'vous n'utiliserez PAS RSA'
 1. RSA est en cours de dépréciation :
     - Dans OpenSSH (version 8.8 sortie en 2021), la clé ssh-rsa a été désactivée par défaut, suite à l’usage du hash SHA-1, jugé obsolète et vulnérable 
     - En parallèle, une dépréciation générale du SHA-1 dans les clés RSA est en cours sur plusieurs distributions
@@ -45,7 +47,7 @@ Sources :
 
 => RSA est encore reconnu, mais ses limites (SHA-1, taille, performance) et son avenir incertain en font un choix de moins en moins recommandé pour SSH.
 
-#### Recommendation of another encryption algorithm
+##### Recommendation of another encryption algorithm
 Un bon algorithme cryptographique repose sur plusieurs fondations essentielles : la sécurité, la performance, et la capacité à évoluer (c’est-à-dire la maturité/crypto-agilité assurée par une documentation active et une adoption pérenne) — comme le recommande le NIST. 
 
 Source : [NIST CSWP 39 second public draft, Considerations for Achieving Crypto Agility](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.39.2pd.pdf)
@@ -71,12 +73,40 @@ Sources :
  - [Wikipédia EdDSA](https://en.wikipedia.org/wiki/EdDSA) last update on 3 August 2025 
 
 2. ou ECDSA (avec précaution)
- - ECDSA utilise la cryptographie à courbe elliptique, ce qui permet des clés courtes pour une bonne sécurité 
- - Mais certaines courbes (NIST P-256 etc.) ont soulevé des inquiétudes de fiabilité ou d’interventions possibles 
- - Par conséquent, Ed25519 est à préférer à ECDSA, en particulier avec une courbe non NIST comme Curve25519.
+    - ECDSA utilise la cryptographie à courbe elliptique, ce qui permet des clés courtes pour une bonne sécurité 
+    - Mais certaines courbes (NIST P-256 etc.) ont soulevé des inquiétudes de fiabilité ou d’interventions possibles 
+    - Par conséquent, Ed25519 est à préférer à ECDSA, en particulier avec une courbe non NIST comme Curve25519.
 
 Sources :
  - [How to generate the best SSH keys](https://www.keystash.io/guides/how-to-generate-the-best-ssh-keys.html) submitted on September 2022
  - [Wikipédia Elliptic-curve_cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
+
+#### Generation paires clés SSH
+```bash
+    chmod +x setup_ssh_ed25519.sh
+    ./setup_ssh_ed25519.sh
+```
+
+Notes :
+ - -a 100 : renforce la protection par passphrase (PBKDF).
+ - -o : format de clé moderne et sûr.
+ - -C : commentaire (souvent un email ou un label).
+
+#### Agent SSH
+```bash
+    chmod +x start_ssh_agent.sh
+    ./start_ssh_agent.sh
+```
+
+### Spawn des VMs
+1. Depuis la WebUI
+ - Creation d'un groupe de ressource appelé test1
+ - Nommage de la VM en Tp1
+ - Choix des paramètres de Région, disponibilité etc
+ - Connection SSH (avec port 22 ouvert) à partir d'une clé publique existante généré depuis mon script setup_ssh_ed25519.sh utilisant l'algorithme ED25519. Récupération sous cat /Users/yduvignau/.ssh/id_ed25519.pub
+ - Création de la VM
+ - Récupération de l'ip publique de la VM
+ - Accès en SSH à la VM via : ssh azureuser@ip-publique
+ - On arrive dans /home/azureuser de la VM
 
 ## TP2 : 'Aller plus loin avec Azure'
