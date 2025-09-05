@@ -46,7 +46,7 @@ Sources :
 => RSA est encore reconnu, mais ses limites (SHA-1, taille, performance) et son avenir incertain en font un choix de moins en moins recommandé pour SSH.
 
 #### Recommendation of another encryption algorithm
-Un bon algorithme cryptographique repose sur plusieurs fondations essentielles : la sécurité, la performance, et la capacité à évoluer (c’est-à-dire la maturité/crypto-agilité assurée par une documentation active et une adoption pérenne) — comme le recommande le NIST. Source : [url](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.39.2pd.pdf)
+Un bon algorithme cryptographique repose sur plusieurs fondations essentielles : la sécurité, la performance, et la capacité à évoluer (c’est-à-dire la maturité/crypto-agilité assurée par une documentation active et une adoption pérenne) — comme le recommande le NIST. Source : [NIST CSWP 39 second public draft, Considerations for Achieving Crypto Agility](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.39.2pd.pdf)
 Résumé  : Le NIST (National Institute of Standards and Technology), dans sa publication de juillet 2025, évoque explicitement que, pour un algorithme cryptographique à clé publique, la force de sécurité dépend des paramètres (sécurité), et que des contraintes de performances et de ressources doivent également être prises en compte (performance). De plus, il souligne la nécessité d’une agilité cryptographique — autrement dit, un algorithme mature et bien documenté permettant des transitions futures sans rupture brusque (maturité/documentation)
 
 1. Ed25519 (EdDSA)
