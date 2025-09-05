@@ -1,5 +1,5 @@
 # M1 Cloud Computing - Azure DevOps
-Rendu : duvignau,[url](https://github.com/yannisduvignau/cloud-computing-azure-devops)
+Rendu : duvignau,[cloud-computing-azure-devops](https://github.com/yannisduvignau/cloud-computing-azure-devops)
 
 ## TP1 : 'Azure first steps'
 ### Prerequisites
@@ -25,23 +25,23 @@ Terraform from hashicorp/tap/terraform
     - En parallèle, une dépréciation générale du SHA-1 dans les clés RSA est en cours sur plusieurs distributions
 
 Sources :
- - [url](https://en.wikipedia.org/wiki/OpenSSH) last update on 8 July 2025
- - [url](https://askubuntu.com/questions/1409105/ubuntu-22-04-ssh-the-rsa-key-isnt-working-since-upgrading-from-20-04)
+ - [Wikipédia OpenSSH](https://en.wikipedia.org/wiki/OpenSSH) last update on 8 July 2025
+ - [Ubuntu 22.04 SSH the RSA key isn't working since upgrading from 20.04](https://askubuntu.com/questions/1409105/ubuntu-22-04-ssh-the-rsa-key-isnt-working-since-upgrading-from-20-04)
 
 2. Performance, sécurité et taille inefficace
     - RSA nécessite des clés beaucoup plus longues pour atteindre une sécurité comparable aux algorithmes modernes. Cela se traduit par des performances moindres (vitesse de génération, signature, validation), surtout sur des systèmes contraints
 
 Sources :
- - [url](https://goteleport.com/blog/comparing-ssh-keys/)
- - [url](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
+ - [Comparing SSH Keys - RSA, DSA, ECDSA, or EdDSA?](https://goteleport.com/blog/comparing-ssh-keys/)
+ - [Wikipédia Elliptic-curve_cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
 
 3. Vulnérabilité face aux avancées futures
  - Les grandes évolutions en factorisation (classique ou quantique) pourraient compromettre RSA plus rapidement à long terme
 
 Sources :
- - [url](https://www.strongdm.com/blog/comparing-ssh-keys) last update on 25 June 2025
- - [url](https://itsfoss.community/t/openssh-9-6p1-what-is-the-best-key-type-for-the-ssh-keygen-command-through-the-t-option/12276) submitted on 1 Jul 2024
- - [url](https://arxiv.org/abs/2508.00832) submitted on 6 Jun 2025
+ - [Comparing SSH Keys - RSA, DSA, ECDSA, or EdDSA?](https://www.strongdm.com/blog/comparing-ssh-keys) last update on 25 June 2025
+ - [OpenSSH 9.6p1: What is the best key type for the ssh-keygen command through the -t option?](https://itsfoss.community/t/openssh-9-6p1-what-is-the-best-key-type-for-the-ssh-keygen-command-through-the-t-option/12276) submitted on 1 Jul 2024
+ - [A Comparative Study of Classical and Post-Quantum Cryptographic Algorithms in the Era of Quantum Computing](https://arxiv.org/abs/2508.00832) submitted on 6 Jun 2025
 
 => RSA est encore reconnu, mais ses limites (SHA-1, taille, performance) et son avenir incertain en font un choix de moins en moins recommandé pour SSH.
 
@@ -58,14 +58,14 @@ Résumé  : Le NIST (National Institute of Standards and Technology), dans sa pu
     - Adoption actuelle : En 2023, il est largement considéré comme la norme professionnelle pour les clés SSH
 
 Sources :
- - [url](https://goteleport.com/blog/comparing-ssh-keys/)
- - [url](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
- - [url](https://www.brandonchecketts.com/archives/its-2023-you-should-be-using-an-ed25519-ssh-key-and-other-current-best-practices) submitted on 10 September 2023
- - [url](https://news.ycombinator.com/item?id=12575358)
- - [url](https://www.keystash.io/guides/how-to-generate-the-best-ssh-keys.html) submitted on September 2022
- - [url](https://en.wikipedia.org/wiki/Ssh-keygen) last update on 16 August 2025
- - [url](https://en.wikipedia.org/wiki/OpenSSH) last update on 8 July 2025
- - [url](https://en.wikipedia.org/wiki/EdDSA) last update on 3 August 2025 
+ - [Comparing SSH Keys - RSA, DSA, ECDSA, or EdDSA?](https://goteleport.com/blog/comparing-ssh-keys/)
+ - [Wikipédia Elliptic-curve_cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
+ - [It’s 2023. You Should Be Using an Ed25519 SSH Key](https://www.brandonchecketts.com/archives/its-2023-you-should-be-using-an-ed25519-ssh-key-and-other-current-best-practices) submitted on 10 September 2023
+ - [Why are ED25519 keys better than RSA](https://news.ycombinator.com/item?id=12575358)
+ - [How to generate the best SSH keys](https://www.keystash.io/guides/how-to-generate-the-best-ssh-keys.html) submitted on September 2022
+ - [Wikipédia Ssh-keygen](https://en.wikipedia.org/wiki/Ssh-keygen) last update on 16 August 2025
+ - [Wikipédia OpenSSH](https://en.wikipedia.org/wiki/OpenSSH) last update on 8 July 2025
+ - [Wikipédia EdDSA](https://en.wikipedia.org/wiki/EdDSA) last update on 3 August 2025 
 
 2. ou ECDSA (avec précaution)
  - ECDSA utilise la cryptographie à courbe elliptique, ce qui permet des clés courtes pour une bonne sécurité 
@@ -73,7 +73,7 @@ Sources :
  - Par conséquent, Ed25519 est à préférer à ECDSA, en particulier avec une courbe non NIST comme Curve25519.
 
 Sources :
- - [url](https://www.keystash.io/guides/how-to-generate-the-best-ssh-keys.html) submitted on September 2022
- - [url](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
+ - [How to generate the best SSH keys](https://www.keystash.io/guides/how-to-generate-the-best-ssh-keys.html) submitted on September 2022
+ - [Wikipédia Elliptic-curve_cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
 
 ## TP2 : 'Aller plus loin avec Azure'
