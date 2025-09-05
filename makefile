@@ -20,10 +20,17 @@
 # - Example:
 #       # Run Terraform plan and apply
 #       terraform-plan:
-#       	$(TERRAFORM_SCRIPT) tp2
+#       	$(TERRAFORM_SCRIPT) tp1
 #
 # - To see all documented targets, run: make (or make help)
 ## ########################################################################## ##
+
+
+
+
+
+
+
 
 ## ########################################################################## ##
 ## Parameters (can be overridden when calling make)
@@ -121,7 +128,7 @@ exec-ssh:
 ## ########################################################################## ##
 
 ### AZURE CLI ###
-# Run Terraform plan and apply in the tp2/terraform directory
+# Run Terraform plan and apply in the tp1/terraform directory
 create-vm-cli:
 	@echo "📝 Running Terraform plan and apply..."
 	$(ALLOW_AZ_CLI_RIGHTS) && $(AZ_CLI_SCRIPT)
@@ -131,15 +138,15 @@ create-vm-cli:
 ## ########################################################################## ##
 
 ### TERRAFORM ###
-# Run Terraform plan and apply in the tp2/terraform directory
+# Run Terraform plan and apply in the tp1/terraform directory
 terraform-plan:
 	@echo "📝 Running Terraform plan and apply..."
-	$(ALLOW_TERRAFORM_RIGHTS) && $(TERRAFORM_SCRIPT) tp2/terraform
+	$(ALLOW_TERRAFORM_RIGHTS) && $(TERRAFORM_SCRIPT) tp1/terraform
 
-# Destroy all Terraform-managed resources in the tp2/terraform directory
+# Destroy all Terraform-managed resources in the tp1/terraform directory
 terraform-destroy:
 	@echo "💣 Destroying all Terraform-managed resources..."
-	cd tp2/terraform && terraform destroy -auto-approve
+	cd tp1/terraform && terraform destroy -auto-approve
 
 # List all available Azure regions
 get-available-region:
