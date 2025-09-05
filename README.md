@@ -106,7 +106,51 @@ Notes :
  - Connection SSH (avec port 22 ouvert) à partir d'une clé publique existante généré depuis mon script setup_ssh_ed25519.sh utilisant l'algorithme ED25519. Récupération sous cat /Users/yduvignau/.ssh/id_ed25519.pub
  - Création de la VM
  - Récupération de l'ip publique de la VM
- - Accès en SSH à la VM via : ssh azureuser@ip-publique
+ - Accès en SSH à la VM via : ssh azureuser@<public_ip_address>
  - On arrive dans /home/azureuser de la VM
+
+2. az : a programmatic approach
+ - az login
+ - To list the Azure region available : az account list-locations --output table
+ - Search on https://learn.microsoft.com/en-us/training/modules/manage-virtual-machines-with-azure-cli/2-create-a-vm
+ - az vm create \
+  --resource-group "[sandbox resource group name]" \
+  --location uksouth \
+  --name SampleVM \
+  --image Ubuntu2204 \
+  --admin-username azureuser \
+  --ssh-key-values ~/.ssh/id_ed25519.pub
+  --verbose 
+ - chmod +x create_azure_vm.sh
+ - ./create_azure_vm.sh or ./create_azure_vm.sh myResourceGroup MyVM azureuser ~/.ssh/id_ed25519.pub
+ - problem avec size : az vm list-sizes --location uksouth -o table
+ - az interactive
+ - ./create_azure_vm.sh
+
+```bash
+azureuser@SampleVM:~$ systemctl status walinuxagent.service
+Warning: The unit file, source configuration file or drop-ins of walinuxagent.service changed on disk. Run 'systemctl daemon-reload' to reload units.
+● walinuxagent.service - Azure Linux Agent
+     Loaded: loaded (/lib/systemd/system/walinuxagent.service; enabled; vendor preset: enabled)
+    Drop-In: /run/systemd/system.control/walinuxagent.service.d
+             └─50-CPUAccounting.conf, 50-MemoryAccounting.conf
+     Active: active (running) since Fri 2025-09-05 11:02:08 UTC; 4min 43s ago
+   Main PID: 753 (python3)
+      Tasks: 7 (limit: 1009)
+     Memory: 44.9M
+        CPU: 2.624s
+     CGroup: /system.slice/walinuxagent.service
+             ├─ 753 /usr/bin/python3 -u /usr/sbin/waagent -daemon
+             └─1050 python3 -u bin/WALinuxAgent-2.14.0.1-py3.12.egg -run-exthandlers
+```
+
+```bash
+azureuser@SampleVM:~$ systemctl status cloud-init.service
+● cloud-init.service - Cloud-init: Network Stage
+     Loaded: loaded (/lib/systemd/system/cloud-init.service; enabled; vendor preset: enabled)
+     Active: active (exited) since Fri 2025-09-05 11:02:07 UTC; 5min ago
+   Main PID: 505 (code=exited, status=0/SUCCESS)
+        CPU: 1.126s
+```
 
 ## TP2 : 'Aller plus loin avec Azure'
