@@ -153,4 +153,16 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
         CPU: 1.126s
 ```
 
+3. Terraforming infrastructures
+    - az account show --query id
+    - Le provider azurerm de Terraform ne supporte que RSA (ssh-rsa) pour admin_ssh_key. Avec az vm create en CLI, Microsoft a déjà ajouté le support Ed25519, mais le provider Terraform ne l’a pas encore intégré (c’est une limitation connue).
+    - ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_terraform -C "terraform_vm"
+    - (base) yduvignau@MacBook-Pro-de-Yannis tp2 % ssh azureuser@<public_ip_address>
+        kex_exchange_identification: Connection closed by remote host
+        Connection closed by <public_ip_address> port 22
+    - => Ajout d'une règle NSG pour SSH
+    - terraform plan -out myplan 
+        terraform apply "myplan"
+    - ssh -i ~/.ssh/id_rsa_terraform azureuser@<public_ip_address>
+
 ## TP2 : 'Aller plus loin avec Azure'

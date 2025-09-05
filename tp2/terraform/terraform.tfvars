@@ -1,0 +1,7 @@
+resource_group = "sandbox-rg"
+vm_name        = "SampleVM"
+admin_username = "azureuser"
+# ssh_key_path   = "~/.ssh/id_ed25519.pub"
+ssh_key_path   = "~/.ssh/id_rsa_terraform.pub"
+vm_size        = "Standard_B1s"
+subscription_id = "57809cd0-1f16-4c5f-bcb0-25c829b6ed75"
