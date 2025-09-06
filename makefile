@@ -141,7 +141,7 @@ create-vm-cli:
 # Run Terraform plan and apply in the tp1/terraform directory
 terraform-plan:
 	@echo "📝 Running Terraform plan and apply..."
-	$(ALLOW_TERRAFORM_RIGHTS) && $(TERRAFORM_SCRIPT) tp1/terraform
+	$(ALLOW_TERRAFORM_RIGHTS) && $(TERRAFORM_SCRIPT) tp$(TP_NUMBER)/terraform
 
 # Destroy all Terraform-managed resources in the tp1/terraform directory
 terraform-destroy:
