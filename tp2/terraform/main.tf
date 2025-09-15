@@ -93,3 +93,21 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 }
 
+resource "azurerm_virtual_machine_extension" "log_analytics_agent" {
+  name                 = "OmsAgentForLinux"
+  virtual_machine_id   = azurerm_linux_virtual_machine.vm.id
+  publisher            = "Microsoft.EnterpriseCloud.Monitoring"
+  type                 = "OmsAgentForLinux"
+  type_handler_version = "1.14"
+  auto_upgrade_minor_version = true
+
+  settings = jsonencode({
+    "workspaceId" = azurerm_log_analytics_workspace.main.workspace_id
+  })
+
+  protected_settings = jsonencode({
+    "workspaceKey" = azurerm_log_analytics_workspace.main.primary_shared_key
+  })
+
+  depends_on = [azurerm_log_analytics_workspace.main]
+}

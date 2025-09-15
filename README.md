@@ -507,4 +507,31 @@ Cette adresse IP est une adresse link-local non routable sur internet. Elle n'ex
 Le "truc", c'est que l'hyperviseur Azure (le logiciel qui gère votre VM sur le serveur physique) intercepte tout le trafic destiné à cette adresse IP spécifique. Au lieu d'envoyer la requête sur le réseau, il la redirige directement vers le service IMDS qui tourne sur l'hôte physique.
 La table de routage de la VM contient une route par défaut qui envoie tout le trafic inconnu vers la passerelle du VNet, mais elle a aussi une route système implicite pour 169.254.169.254/32 qui pointe vers l'hôte. C'est ce qui garantit que la requête ne quitte jamais l'environnement sécurisé de l'hôte, rendant ce mécanisme très sûr.
 
-- az vm nic list --resource-group rg --vm-name SampleVM
+- az vm nic list --resource-group sandbox-rg2 --vm-name SampleVM
+
+### Monitoring (monitoring CPU et RAM)
+
+- Le groupe d'actions (azurerm_monitor_action_group) : Il définit quoi faire quand une alerte se déclenche. Ici, c'est "envoyer un email".
+
+- La règle d'alerte (azurerm_monitor_metric_alert) : Elle lie une ressource (votre VM) à une condition (CPU > 70%) et à un groupe d'actions.
+
+- curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+- CPU : az monitor metric-alert list --resource-group sandbox-rg2 --output table
+- RAM : az monitor scheduled-query list --resource-group sandbox-rg2 --output table
+
+- déclenchement d'un stress de la VM : 
+sudo apt update && sudo apt install stress-ng -y
+stress-ng --cpu 1 --cpu-load 90 --timeout 10m
+stress-ng --vm 1 --vm-bytes 1500M --timeout 10m
+
+- az monitor activity-log list \
+    --resource-group sandbox-rg2 \
+    --start-time $(date --utc --iso-8601=seconds -d "1 hour ago") \
+    --query "[?category.value=='Alert' && contains(properties.description, 'Fired')].{Time:eventTimestamp, AlertName:properties.alertRule, Status:status.value}" \
+    --output table
+```bash
+2025-09-15T14:30:15.123456+00:00	Alert-VM-High-CPU	Succeeded
+2025-09-15T14:35:45.987654+00:00	Alert-VM-Low-Memory	Succeeded
+```
+
+### Vault
