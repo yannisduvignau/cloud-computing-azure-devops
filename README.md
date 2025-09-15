@@ -195,19 +195,19 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
 - bonne pratique en sécurité : règle Deny all inbound pour bloquer explicitement tout le reste
 
 ```bash
-Apply complete! Resources: 10 added, 0 changed, 0 destroyed.
-Outputs:
-public_ip = "<public_ip_address>"
+  Apply complete! Resources: 10 added, 0 changed, 0 destroyed.
+  Outputs:
+  public_ip = "<public_ip_address>"
 ```
 
 -
 
 ```bash
-az vm show \
-  --resource-group sandbox-rg2 \
-  --name SampleVM \
-  --show-details \
-  -o jsonc
+  az vm show \
+    --resource-group sandbox-rg2 \
+    --name SampleVM \
+    --show-details \
+    -o jsonc
 ```
 
 ```bash
@@ -325,4 +325,40 @@ az vm show \
     (base) yduvignau@MacBook-Pro-de-Yannis cloud_computing % ssh -A -i ~/.ssh/id_rsa_terraform -p 2222 azureuser@20.0.72.107
     ssh: connect to host 20.0.72.107 port 2222: Operation timed out
 ```
+
+### Un ptit nom DNS
+1. Adapter le plan Terraform
+```bash
+resource "azurerm_public_ip" "pip" {
+  name                = "${var.vm_name}-pip"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  domain_name_label   = var.dns_label
+}
+```
+Dans terraform.tfvars : dns_label  = "mon-vm-toto"
+et dans variables.tf : 
+```bash
+variable "dns_label" {
+  description = "Label DNS pour la IP publique (doit être en minuscules, chiffres et tirets, unique au sein du cluster régional)"
+  type        = string
+  default     = "" 
+  validation {
+    condition     = var.dns_label == "" || can(regex("^[a-z0-9-]{3,63}$", var.dns_label))
+    error_message = "dns_label doit être vide ou respecter ^[a-z0-9-]{3,63}$ (minuscules, chiffres et tirets)."
+  }
+}
+```
+
+2. Ajouter un output custom à terraform apply
+- Creation d'un fichier outputs.tf et rajoute d'un output du dns :
+```bash
+output "public_ip_fqdn" {
+  description = "FQDN complet fourni par Azure (si domain_name_label renseigné)"
+  value       = azurerm_public_ip.pip.fqdn
+}
+```
+
 - ssh -A -i ~/.ssh/id_rsa_terraform azureuser@mon-vm-toto.uksouth.cloudapp.azure.com
