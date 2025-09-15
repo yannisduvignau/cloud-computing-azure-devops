@@ -34,7 +34,7 @@ resource "azurerm_monitor_metric_alert" "cpu_alert" {
   }
 }
 
-resource "azurerm_log_analytics_workspace" "main" {
+resource "azurerm_log_analytics_workspace" "law" {
   name                = "law-vm-monitoring-${azurerm_resource_group.rg.name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -55,7 +55,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "memory_alert" {
 
   description            = "Déclenchée quand la RAM dispo est < 512MB."
   enabled                = true
-  data_source_id         = azurerm_log_analytics_workspace.main.id
+  data_source_id         = azurerm_log_analytics_workspace.law.id
   frequency   = 5
   time_window = 5
   query                  = <<-QUERY

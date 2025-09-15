@@ -535,3 +535,6 @@ stress-ng --vm 1 --vm-bytes 1500M --timeout 10m
 ```
 
 ### Vault
+- az keyvault secret show \
+  --name "<Le nom de votre secret>" \
+  --vault-name "<Le nom de votre Key Vault>"

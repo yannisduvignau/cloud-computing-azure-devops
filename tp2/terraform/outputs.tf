@@ -19,6 +19,8 @@ output "storage_container_url" {
   value = azurerm_storage_container.container.id
 }
 
-# output "sas_token" {
-#   value = azurerm_storage_account_sas.sas.sas
-# }
+output "key_vault_secret_value" {
+  description = "The value of the secret stored in Azure Key Vault."
+  value       = azurerm_key_vault_secret.vault_secret.value
+  sensitive   = true
+}

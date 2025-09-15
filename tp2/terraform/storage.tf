@@ -78,8 +78,3 @@ resource "azurerm_role_assignment" "vm_blob_access" {
     azurerm_linux_virtual_machine.vm
   ]
 }
-
-resource "random_integer" "suffix" {
-  min = 1000
-  max = 9999
-}

@@ -102,12 +102,26 @@ resource "azurerm_virtual_machine_extension" "log_analytics_agent" {
   auto_upgrade_minor_version = true
 
   settings = jsonencode({
-    "workspaceId" = azurerm_log_analytics_workspace.main.workspace_id
+    "workspaceId" = azurerm_log_analytics_workspace.law.workspace_id
   })
 
   protected_settings = jsonencode({
-    "workspaceKey" = azurerm_log_analytics_workspace.main.primary_shared_key
+    "workspaceKey" = azurerm_log_analytics_workspace.law.primary_shared_key
   })
 
-  depends_on = [azurerm_log_analytics_workspace.main]
+  depends_on = [azurerm_log_analytics_workspace.law]
+}
+
+
+
+resource "random_string" "main" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
+
+resource "random_integer" "suffix" {
+  min = 1000
+  max = 9999
 }

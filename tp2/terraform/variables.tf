@@ -58,3 +58,9 @@ variable "storage_container_name" {
   description = "Storage container name"
   default     = "mycontainer"
 }
+
+variable "prefix" {
+  description = "Un préfixe pour nommer les ressources Azure."
+  type        = string
+  default     = "monprojet"
+}
