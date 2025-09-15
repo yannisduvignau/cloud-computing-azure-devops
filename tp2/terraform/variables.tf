@@ -46,3 +46,15 @@ variable "dns_label" {
     error_message = "dns_label doit être vide ou respecter ^[a-z0-9-]{3,63}$ (minuscules, chiffres et tirets)."
   }
 }
+
+variable "storage_account_name" {
+  type        = string
+  description = "Storage account name (3-24 lowercase letters and numbers)"
+  default     = "mystorageacct123"
+}
+
+variable "storage_container_name" {
+  type        = string
+  description = "Storage container name"
+  default     = "mycontainer"
+}

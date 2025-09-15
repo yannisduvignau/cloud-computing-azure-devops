@@ -362,3 +362,149 @@ output "public_ip_fqdn" {
 ```
 
 - ssh -A -i ~/.ssh/id_rsa_terraform azureuser@mon-vm-toto.uksouth.cloudapp.azure.com
+
+### Blob Storage
+- création d'un fichier storage.tf
+- rajout de 2 outputs : 
+```bash
+output "storage_account_primary_key" {
+  value = azurerm_storage_account.storage.primary_access_key
+}
+
+output "storage_container_url" {
+  value = azurerm_storage_container.container.id
+}
+```
+
+- ajout de identity {
+    type = "SystemAssigned"
+  } dans ma config de vm pour créer une identité unique pour cette VM dans Azure Active Directory. Une fois la VM créée avec cette identité, votre data "azurerm_virtual_machine" pourra la trouver, et l'expression data.azurerm_virtual_machine.data.identity[0].principal_id fonctionnera correctement.
+
+- Installation de azcopy
+```bash
+# Télécharger azcopy
+wget https://aka.ms/downloadazcopy-v10-linux
+
+# Décompresser l'archive
+tar -xvf downloadazcopy-v10-linux
+
+# Se déplacer dans le bon dossier (le nom peut légèrement varier)
+cd azcopy_linux_amd64_*
+
+# Déplacer l'exécutable pour qu'il soit accessible partout
+sudo cp ./azcopy /usr/local/bin/
+```
+
+- C'est l'étape cruciale. Vous n'avez pas besoin de mot de passe ni de clé, car la VM va s'authentifier elle-même.
+```bash
+azureuser@SampleVM:~$ azcopy login --identity
+INFO: Login with identity succeeded.
+```
+
+- Essayez d'envoyer un fichier vers le stockage. : 
+```bash
+echo "Test depuis la VM" > test-vm.txt 
+```
+
+- Ensuite, envoyez-le vers votre conteneur. L'argument --auth-mode login est très important, car il indique à la commande d'utiliser l'identité avec laquelle vous venez de vous connecter.
+```bash
+azcopy copy 'test-vm.txt' 'https://mystorageacct12345607.blob.core.windows.net/mycontainer/'
+```
+
+```bash
+INFO: Scanning...
+INFO: Autologin not specified.
+INFO: Authenticating to destination using Azure AD
+INFO: Any empty folders will not be processed, because source and/or destination doesn't have full folder support
+
+Job 0f8c6e57-26a4-644c-67de-54c3d9124f21 has started
+Log file is located at: /home/azureuser/.azcopy/0f8c6e57-26a4-644c-67de-54c3d9124f21.log
+
+100.0 %, 1 Done, 0 Failed, 0 Pending, 0 Skipped, 1 Total, 2-sec Throughput (Mb/s): 0.0001
+
+
+Job 0f8c6e57-26a4-644c-67de-54c3d9124f21 summary
+Elapsed Time (Minutes): 0.0333
+Number of File Transfers: 1
+Number of Folder Property Transfers: 0
+Number of Symlink Transfers: 0
+Total Number of Transfers: 1
+Number of File Transfers Completed: 1
+Number of Folder Transfers Completed: 0
+Number of File Transfers Failed: 0
+Number of Folder Transfers Failed: 0
+Number of File Transfers Skipped: 0
+Number of Folder Transfers Skipped: 0
+Number of Symbolic Links Skipped: 0
+Number of Hardlinks Converted: 0
+Number of Special Files Skipped: 0
+Total Number of Bytes Transferred: 18
+Final Job Status: Completed
+```
+
+- Récupération
+```bash
+azcopy copy 'https://mystorageacct12345607.blob.core.windows.net/mycontainer/test-vm.txt' 'test-vm_depuis_azure.txt'
+```
+```bash
+INFO: Scanning...
+INFO: Autologin not specified.
+INFO: Authenticating to source using Azure AD
+INFO: Any empty folders will not be processed, because source and/or destination doesn't have full folder support
+
+Job 46c3aa4e-8c09-a546-7e29-c480e97c9e74 has started
+Log file is located at: /home/azureuser/.azcopy/46c3aa4e-8c09-a546-7e29-c480e97c9e74.log
+
+100.0 %, 1 Done, 0 Failed, 0 Pending, 0 Skipped, 1 Total, 2-sec Throughput (Mb/s): 0.0001
+
+
+Job 46c3aa4e-8c09-a546-7e29-c480e97c9e74 summary
+Elapsed Time (Minutes): 0.0334
+Number of File Transfers: 1
+Number of Folder Property Transfers: 0
+Number of Symlink Transfers: 0
+Total Number of Transfers: 1
+Number of File Transfers Completed: 1
+Number of Folder Transfers Completed: 0
+Number of File Transfers Failed: 0
+Number of Folder Transfers Failed: 0
+Number of File Transfers Skipped: 0
+Number of Folder Transfers Skipped: 0
+Number of Symbolic Links Skipped: 0
+Number of Hardlinks Converted: 0
+Number of Special Files Skipped: 0
+Total Number of Bytes Transferred: 18
+Final Job Status: Completed
+
+azureuser@SampleVM:~$ ls
+azcopy_linux_amd64_10.30.1  downloadazcopy-v10-linux  test-vm.txt  test-vm_depuis_azure.txt
+```
+```bash
+azureuser@SampleVM:~$ cat test-vm_depuis_azure.txt
+Test depuis la VM
+```
+
+- Déterminez comment azcopy login --identity vous a authentifié :
+L'authentification azcopy login --identity fonctionne grâce au service de métadonnées d'instance Azure (IMDS), qui est une API REST accessible uniquement depuis une VM Azure.
+Quand vous lancez la commande, azcopy envoie une requête à une adresse IP spéciale (169.254.169.254) sur la VM. L'IMDS, qui reçoit cette requête, génère un jeton d'accès JWT (JSON Web Token) au nom de l'identité managée de la VM. Ce jeton est ensuite présenté par azcopy aux services Azure (comme le stockage) pour prouver son identité sans avoir besoin de secret ou de mot de passe. C'est un peu comme si la VM avait sa propre carte d'identité fournie par Azure.
+
+- Requêtez un JWT d'authentification auprès du service que vous venez d'identifier, manuellement :
+```bash
+azureuser@SampleVM:~$ curl 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/' -H Metadata:true
+{
+  "access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkpZaEFjVFBNWl9MWDZEQmxPV1E3SG4wTmVYRSIsImtpZCI6IkpZaEFjVFBNWl9MWDZEQmxPV1E3SG4wTmVYRSJ9.eyJhdWQiOiJodHRwczovL3N0b3JhZ2UuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzQxMzYwMGNmLWJkNGUtNGM3Yy04YTYxLTY5ZTczY2RkZjczMS8iLCJpYXQiOjE3NTc5NDIyNTgsIm5iZiI6MTc1Nzk0MjI1OCwiZXhwIjoxNzU4MDI4OTU4LCJhaW8iOiJrMlJnWVBBcDNHcGRvWktlbkN2d2NSR0xPN01XQUE9PSIsImFwcGlkIjoiNmExM2YxODItMzJmZS00ZmYyLWFiZTEtYzUwM2JiY2NmNzExIiwiYXBwaWRhY3IiOiIyIiwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNDEzNjAwY2YtYmQ0ZS00YzdjLThhNjEtNjllNzNjZGRmNzMxLyIsImlkdHlwIjoiYXBwIiwib2lkIjoiYzI3Y2NiOWEtMTI4Yi00YWU3LWI3YmQtODhkMTA4NGU3ZjYwIiwicmgiOiIxLkFUc0F6d0EyUVU2OWZFeUtZV25uUE4zM01ZR21CdVRVODZoQ2tMYkNzQ2xKZXZFVkFRQTdBQS4iLCJzdWIiOiJjMjdjY2I5YS0xMjhiLTRhZTctYjdiZC04OGQxMDg0ZTdmNjAiLCJ0aWQiOiI0MTM2MDBjZi1iZDRlLTRjN2MtOGE2MS02OWU3M2NkZGY3MzEiLCJ1dGkiOiIwNFJLNS1Ram4wLVNMWm5iQS0tUUFBIiwidmVyIjoiMS4wIiwieG1zX2Z0ZCI6IjJLWTBHLTVVNGFEUTN6OFlTbC1wSnVFVERDTWtjNlAtTFA0aEZwYVdCQzhCZFd0emIzVjBhQzFrYzIxeiIsInhtc19pZHJlbCI6IjcgMjYiLCJ4bXNfbWlyaWQiOiIvc3Vic2NyaXB0aW9ucy81NzgwOWNkMC0xZjE2LTRjNWYtYmNiMC0yNWM4MjliNmVkNzUvcmVzb3VyY2Vncm91cHMvc2FuZGJveC1yZzIvcHJvdmlkZXJzL01pY3Jvc29mdC5Db21wdXRlL3ZpcnR1YWxNYWNoaW5lcy9TYW1wbGVWTSIsInhtc19yZCI6IjAuNDJMbFlCSml0QllTNGVBVUVsRHA5YlZidWUyMjc2UXY2Ym95bWsxNlFGRU9JWUhHWld4UHJueGU0VFJoMjZFTm1wNVZId0UiLCJ4bXNfdGRiciI6IkVVIn0.e0-7uilxznhFfzTb2r2nK86RpvSZ-Yeickk3-VqCCBxi_q3pGUeyC2a4dmlfEosWxPAqRSRozEAHfP7CesmKqIZmIUdt-YwvVaYy23nxnZKgk34sY4ETGgOZVW1bgUjMIGY3JJdkG9ND1xPB1apa6NK_jt3enmdtP_gweLt6IyLQVOhpjkQ0o1ql_nGkb8ZDimzCCMPwRFizGFJEHtLPuhytETJQCmOSX1a2ArUyqoy9BeQb2l0t_0hXmmncH9D_6y7P8Dr8BaoD6H7BvjQWjRIPaS_l3Z7GQccep4jgkOaFsZJ6MOcddCHq0wdNjIIOUKyrVR-eq2yb9vkFMDOu3g",
+  "client_id":"6a13f182-32fe-4ff2-abe1-c503bbccf711",
+  "expires_in":"86400",
+  "expires_on":"1758028958",
+  "ext_expires_in":"86399",
+  "not_before":"1757942258",
+  "resource":"https://storage.azure.com/",
+  "token_type":"Bearer"
+  }
+```
+- Comment l'IP 169.254.169.254 est-elle joignable ?
+Cette adresse IP est une adresse link-local non routable sur internet. Elle n'existe pas sur votre réseau virtuel (VNet).
+Le "truc", c'est que l'hyperviseur Azure (le logiciel qui gère votre VM sur le serveur physique) intercepte tout le trafic destiné à cette adresse IP spécifique. Au lieu d'envoyer la requête sur le réseau, il la redirige directement vers le service IMDS qui tourne sur l'hôte physique.
+La table de routage de la VM contient une route par défaut qui envoie tout le trafic inconnu vers la passerelle du VNet, mais elle a aussi une route système implicite pour 169.254.169.254/32 qui pointe vers l'hôte. C'est ce qui garantit que la requête ne quitte jamais l'environnement sécurisé de l'hôte, rendant ce mécanisme très sûr.
+
+- az vm nic list --resource-group rg --vm-name SampleVM
