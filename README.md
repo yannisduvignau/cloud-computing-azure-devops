@@ -31,53 +31,50 @@ Terraform from hashicorp/tap/terraform
 
 ##### Why 'vous n'utiliserez PAS RSA'
 
-1. RSA est en cours de dépréciation :
-   - Dans OpenSSH (version 8.8 sortie en 2021), la clé ssh-rsa a été désactivée par défaut, suite à l’usage du hash SHA-1, jugé obsolète et vulnérable
-   - En parallèle, une dépréciation générale du SHA-1 dans les clés RSA est en cours sur plusieurs distributions
+1. RSA is being depreciation :
+   - In OpenSSH (version 8.8 released in 2021), the SSH-RSA key was deactivated by default, following the use of the Hash Sha-1, deemed obsolete and vulnerable
+   - In parallel, a general depreciation of the SHA-1 in the RSA keys is underway on several distributions
 
 Sources :
-
 - [Wikipédia OpenSSH](https://en.wikipedia.org/wiki/OpenSSH) last update on 8 July 2025
 - [Ubuntu 22.04 SSH the RSA key isn't working since upgrading from 20.04](https://askubuntu.com/questions/1409105/ubuntu-22-04-ssh-the-rsa-key-isnt-working-since-upgrading-from-20-04)
 
-2. Performance, sécurité et taille inefficace
-   - RSA nécessite des clés beaucoup plus longues pour atteindre une sécurité comparable aux algorithmes modernes. Cela se traduit par des performances moindres (vitesse de génération, signature, validation), surtout sur des systèmes contraints
+2. Ineffective performance, safety and size
+   - RSA requires much longer keys to reaching security comparable to modern algorithms. This results in lower performance (generation speed, signature, validation), especially on forced systems
 
 Sources :
-
 - [Comparing SSH Keys - RSA, DSA, ECDSA, or EdDSA?](https://goteleport.com/blog/comparing-ssh-keys/)
 - [Wikipédia Elliptic-curve_cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
 
-3. Vulnérabilité face aux avancées futures
+3. Vulnerability in the face of future advances
 
-- Les grandes évolutions en factorisation (classique ou quantique) pourraient compromettre RSA plus rapidement à long terme
+- Large developments in factorization (classic or quantum) could compromise RSA faster in the long term
 
 Sources :
-
 - [Comparing SSH Keys - RSA, DSA, ECDSA, or EdDSA?](https://www.strongdm.com/blog/comparing-ssh-keys) last update on 25 June 2025
 - [OpenSSH 9.6p1: What is the best key type for the ssh-keygen command through the -t option?](https://itsfoss.community/t/openssh-9-6p1-what-is-the-best-key-type-for-the-ssh-keygen-command-through-the-t-option/12276) submitted on 1 Jul 2024
 - [A Comparative Study of Classical and Post-Quantum Cryptographic Algorithms in the Era of Quantum Computing](https://arxiv.org/abs/2508.00832) submitted on 6 Jun 2025
 
-=> RSA est encore reconnu, mais ses limites (SHA-1, taille, performance) et son avenir incertain en font un choix de moins en moins recommandé pour SSH.
+=> RSA is still recognized, but its limits (SHA-1, size, performance) and its uncertain future make it a choice less and less recommended for SSH.
 
 ##### Recommendation of another encryption algorithm
 
-Un bon algorithme cryptographique repose sur plusieurs fondations essentielles : la sécurité, la performance, et la capacité à évoluer (c’est-à-dire la maturité/crypto-agilité assurée par une documentation active et une adoption pérenne) — comme le recommande le NIST.
+A good cryptographic algorithm is based on several essential foundations: security, performance, and the ability to evolve (that is to say maturity/crypto-actility ensured by active documentation and sustainable adoption)-as the NIST recommends.
 
 Source : [NIST CSWP 39 second public draft, Considerations for Achieving Crypto Agility](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.39.2pd.pdf)
 
-Résumé : Le NIST (National Institute of Standards and Technology), dans sa publication de juillet 2025, évoque explicitement que, pour un algorithme cryptographique à clé publique, la force de sécurité dépend des paramètres (sécurité), et que des contraintes de performances et de ressources doivent également être prises en compte (performance). De plus, il souligne la nécessité d’une agilité cryptographique — autrement dit, un algorithme mature et bien documenté permettant des transitions futures sans rupture brusque (maturité/documentation)
+
+Summary: The NIST (National Institute of Standards and Technology), in its publication of July 2025, explicitly evokes that, for a public cryptographic algorithm, the security force depends on the parameters (security), and that the constraints of performance and resources must also be taken into account (performance). In addition, he highlights the need for cryptographic agility -in other words, a mature and well -documented algorithm allowing future transitions without abrupt break (maturity/documentation)
 
 1. Ed25519 (EdDSA)
-   - Sécurité robuste : Ed25519 offre un niveau de sécurité très élevé avec une clé compacte — meilleure densité de sécurité avec moins de bits
-   - Performance : C’est l’algorithme le plus rapide sur tous les metrics (génération, signature, validation)
-   - Implémentation plus simple, moins de failles : Le processus de génération d’une clé est simple (nombre aléatoire appliqué directement), contrairement à RSA qui a des points de fragilité liés à la génération de grands nombres premiers
-   - Résistance aux vulnérabilités connues : Évite les failles des anciens algorithmes comme DSA ou ECDSA — aucune suspicion de portes dérobées comme certaines courbes NIST
-   - Support mature : Ed25519 est supporté par OpenSSH depuis la version 6.5 (2014), et a été standardisé dans le protocole SSH
-   - Adoption actuelle : En 2023, il est largement considéré comme la norme professionnelle pour les clés SSH
+   - Robust safety: ED25519 offers a very high level of safety with a compact key - better security density with less bits
+   - Performance: this is the fastest algorithm on all Metrics (generation, signature, validation)
+   - Simpler implementation, fewer faults: the process of generating a key is simple (random number applied directly), unlike RSA which has fragile points linked to the generation of large prime numbers
+   - Resistance to known vulnerabilities: avoids flaws of ancient algorithms like DSA or ECDSA -no suspicion of stolen doors like certain NIST curves
+   - Mature support: ED25519 has been supported by OpenSSH since version 6.5 (2014), and has been standardized in the SSH protocol
+   - Current adoption: in 2023, it was widely considered as the professional standard for SSH keys
 
 Sources :
-
 - [Comparing SSH Keys - RSA, DSA, ECDSA, or EdDSA?](https://goteleport.com/blog/comparing-ssh-keys/)
 - [Wikipédia Elliptic-curve_cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
 - [It’s 2023. You Should Be Using an Ed25519 SSH Key](https://www.brandonchecketts.com/archives/its-2023-you-should-be-using-an-ed25519-ssh-key-and-other-current-best-practices) submitted on 10 September 2023
@@ -87,48 +84,49 @@ Sources :
 - [Wikipédia OpenSSH](https://en.wikipedia.org/wiki/OpenSSH) last update on 8 July 2025
 - [Wikipédia EdDSA](https://en.wikipedia.org/wiki/EdDSA) last update on 3 August 2025
 
-2. ou ECDSA (avec précaution)
-   - ECDSA utilise la cryptographie à courbe elliptique, ce qui permet des clés courtes pour une bonne sécurité
-   - Mais certaines courbes (NIST P-256 etc.) ont soulevé des inquiétudes de fiabilité ou d’interventions possibles
-   - Par conséquent, Ed25519 est à préférer à ECDSA, en particulier avec une courbe non NIST comme Curve25519.
+2. or ECDSA (carefully)
+   - ECDSA uses elliptical curve cryptography, which allows short keys for good safety
+   - But certain curves (NIST P-256 etc.) have raised concerns of reliability or possible interventions
+   - Consequently, ED25519 is to be preferred in ECDSA, in particular with a non -Nist curve like curve25519.
 
 Sources :
-
 - [How to generate the best SSH keys](https://www.keystash.io/guides/how-to-generate-the-best-ssh-keys.html) submitted on September 2022
 - [Wikipédia Elliptic-curve_cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) last update on 30 August 2025
 
-#### Generation paires clés SSH
+#### Generation SSH key pairs
 
 ```bash
-    chmod +x setup_ssh_ed25519.sh
-    ./setup_ssh_ed25519.sh
+    chmod +x ./helpers/setup_ssh_ed25519.sh
+    ./helpers/setup_ssh_ed25519.sh
 ```
 
 Notes :
-
-- -a 100 : renforce la protection par passphrase (PBKDF).
-- -o : format de clé moderne et sûr.
-- -C : commentaire (souvent un email ou un label).
+- -a 100 : Strengthens protection by passphrase (PBKDF).
+- -o : Modern and safe key format.
+- -C : Comment (often an email or a label).
 
 #### Agent SSH
 
 ```bash
-    chmod +x start_ssh_agent.sh
-    ./start_ssh_agent.sh
+    chmod +x ./helpers/start_ssh_agent.sh
+    ./helpers/start_ssh_agent.sh
 ```
+
+ssh-agent -s : This order starts the SSH agent. The agent is a small program that turns in the background and keeps in memory the private key in a secure manner. It avoids having to retype the password from the key to each connection. The command only shows the environment variables necessary to communicate with this agent.
+The agent takes care of authentication for all the following SSH connections, without asking the password.
 
 ### Spawn des VMs
 
-1. Depuis la WebUI
+1. From WebUI
 
-- Creation d'un groupe de ressource appelé test1
-- Nommage de la VM en Tp1
-- Choix des paramètres de Région, disponibilité etc
-- Connection SSH (avec port 22 ouvert) à partir d'une clé publique existante généré depuis mon script setup_ssh_ed25519.sh utilisant l'algorithme ED25519. Récupération sous cat /Users/yduvignau/.ssh/id_ed25519.pub
-- Création de la VM
-- Récupération de l'ip publique de la VM
-- Accès en SSH à la VM via : ssh azureuser@<public_ip_address>
-- On arrive dans /home/azureuser de la VM
+- Creation of a resource group called test1
+- Namage of the VM in TP1
+- Choice of regional parameters, availability, etc.
+- SSH Connection (with Port 22 Open) from an existing public key generated from my Setup_SSH_ED25519.sh script using the ED25519 algorithm. Recovery under cat /users/yduvignau/.ssh/id_ed25519.pub
+- Creation of the VM
+- Recovery of the Public IP of the VM
+- Access in SSH to VM via: ssh azureuser@<public_ip_address>
+- We arrive in /home/azureuser of the VM
 
 2. az : a programmatic approach
 
@@ -176,23 +174,21 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
 ```
 
 3. Terraforming infrastructures
-   - az account show --query id
-   - Le provider azurerm de Terraform ne supporte que RSA (ssh-rsa) pour admin_ssh_key. Avec az vm create en CLI, Microsoft a déjà ajouté le support Ed25519, mais le provider Terraform ne l’a pas encore intégré (c’est une limitation connue).
-   - ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_terraform -C "terraform_vm"
-   - (base) yduvignau@MacBook-Pro-de-Yannis tp1 % ssh azureuser@<public_ip_address>
-     kex_exchange_identification: Connection closed by remote host
-     Connection closed by <public_ip_address> port 22
-   - => Ajout d'une règle NSG pour SSH
+```bash
+   (base) yduvignau@MacBook-Pro-de-Yannis tp1 % ssh azureuser@<public_ip_address>
+   kex_exchange_identification: Connection closed by remote host
+   Connection closed by <public_ip_address> port 22
+```
+   - => Adding a NSG rule for SSH
    - terraform plan -out myplan
      terraform apply "myplan"
-   - ssh -i ~/.ssh/id_rsa_terraform azureuser@<public_ip_address>
+   - ssh azureuser@<public_ip_address>
 
 ## TP2 : 'Aller plus loin avec Azure'
 
 ### Network Security Group
 
-- ajout d'un fichier network.tf avec nsg, ssh et nic_nsg
-- bonne pratique en sécurité : règle Deny all inbound pour bloquer explicitement tout le reste
+- Adding a network.tf file with NSG, SSH and Nic_NSG
 
 ```bash
   Apply complete! Resources: 10 added, 0 changed, 0 destroyed.
@@ -200,12 +196,10 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
   public_ip = "<public_ip_address>"
 ```
 
--
-
 ```bash
   az vm show \
-    --resource-group sandbox-rg2 \
-    --name SampleVM \
+    --resource-group sandbox-rg-tp2 \
+    --name SampleVM-TP2 \
     --show-details \
     -o jsonc
 ```
@@ -320,10 +314,10 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
 ```
 
 ```bash
-    (base) yduvignau@MacBook-Pro-de-Yannis cloud_computing % ssh -A -i ~/.ssh/id_rsa_terraform azureuser@20.0.72.107
-    ssh: connect to host 20.0.72.107 port 22: Connection refused
-    (base) yduvignau@MacBook-Pro-de-Yannis cloud_computing % ssh -A -i ~/.ssh/id_rsa_terraform -p 2222 azureuser@20.0.72.107
-    ssh: connect to host 20.0.72.107 port 2222: Operation timed out
+    (base) yduvignau@MacBook-Pro-de-Yannis cloud_computing % ssh azureuser@<public_ip_address>
+    ssh: connect to host <public_ip_address> port 22: Connection refused
+    (base) yduvignau@MacBook-Pro-de-Yannis cloud_computing % ssh -p 2222 azureuser@<public_ip_address>
+    ssh: connect to host <public_ip_address> port 2222: Operation timed out
 ```
 
 ### Un ptit nom DNS
@@ -338,30 +332,30 @@ resource "azurerm_public_ip" "pip" {
   domain_name_label   = var.dns_label
 }
 ```
-Dans terraform.tfvars : dns_label  = "mon-vm-toto"
-et dans variables.tf : 
+In terraform.tfvars : dns_label  = "mon-vm-toto"
+and in variables.tf : 
 ```bash
 variable "dns_label" {
-  description = "Label DNS pour la IP publique (doit être en minuscules, chiffres et tirets, unique au sein du cluster régional)"
+  description = "DNS label for public IP (must be in tiny, figures and dashes, unique within the regional cluster)"
   type        = string
   default     = "" 
   validation {
     condition     = var.dns_label == "" || can(regex("^[a-z0-9-]{3,63}$", var.dns_label))
-    error_message = "dns_label doit être vide ou respecter ^[a-z0-9-]{3,63}$ (minuscules, chiffres et tirets)."
+    error_message = "dns_label must be empty or respect ^[a-z0-9-]{3,63}$ (tiny, figures and dashes)."
   }
 }
 ```
 
-2. Ajouter un output custom à terraform apply
-- Creation d'un fichier outputs.tf et rajoute d'un output du dns :
+2. Add a custom output to terraform apply
+- Creation of an OUTPUTS.TF file and adds an output of the DNS:
 ```bash
 output "public_ip_fqdn" {
-  description = "FQDN complet fourni par Azure (si domain_name_label renseigné)"
+  description = "Full fqdn provided by Azure (if domain_name_label entered)"
   value       = azurerm_public_ip.pip.fqdn
 }
 ```
 
-- ssh -A -i ~/.ssh/id_rsa_terraform azureuser@mon-vm-toto.uksouth.cloudapp.azure.com
+- ssh azureuser@mon-vm-toto.uksouth.cloudapp.azure.com
 
 ### Blob Storage
 - création d'un fichier storage.tf
@@ -376,37 +370,31 @@ output "storage_container_url" {
 }
 ```
 
-- ajout de identity {
+- add identity {
     type = "SystemAssigned"
-  } dans ma config de vm pour créer une identité unique pour cette VM dans Azure Active Directory. Une fois la VM créée avec cette identité, votre data "azurerm_virtual_machine" pourra la trouver, et l'expression data.azurerm_virtual_machine.data.identity[0].principal_id fonctionnera correctement.
+  } 
+  In the VM config to create a unique identity for this VM in Azure Active Directory. Once the VM is created with this identity, your data "azurerm_virtual_machine" can find it, and the expression data.azurerm_virtual_machine.data.identity[0].principal_id will work properly.
 
-- Installation de azcopy
+- Installation of azcopy
 ```bash
-# Télécharger azcopy
 wget https://aka.ms/downloadazcopy-v10-linux
-
-# Décompresser l'archive
 tar -xvf downloadazcopy-v10-linux
-
-# Se déplacer dans le bon dossier (le nom peut légèrement varier)
 cd azcopy_linux_amd64_*
-
-# Déplacer l'exécutable pour qu'il soit accessible partout
 sudo cp ./azcopy /usr/local/bin/
 ```
 
-- C'est l'étape cruciale. Vous n'avez pas besoin de mot de passe ni de clé, car la VM va s'authentifier elle-même.
+- This is the crucial step. You don't need password or key, because the VM will authenticate itself.
 ```bash
 azureuser@SampleVM:~$ azcopy login --identity
 INFO: Login with identity succeeded.
 ```
 
-- Essayez d'envoyer un fichier vers le stockage. : 
+- Try sending a file to storage. : 
 ```bash
 echo "Test depuis la VM" > test-vm.txt 
 ```
 
-- Ensuite, envoyez-le vers votre conteneur. L'argument --auth-mode login est très important, car il indique à la commande d'utiliser l'identité avec laquelle vous venez de vous connecter.
+- Then send it to your container. The argument --auth-mode login is very important, because it indicates that it is up to the order to use the identity with which you have just connected.
 ```bash
 azcopy copy 'test-vm.txt' 'https://mystorageacct12345607.blob.core.windows.net/mycontainer/'
 ```
@@ -442,7 +430,7 @@ Total Number of Bytes Transferred: 18
 Final Job Status: Completed
 ```
 
-- Récupération
+- Recovery
 ```bash
 azcopy copy 'https://mystorageacct12345607.blob.core.windows.net/mycontainer/test-vm.txt' 'test-vm_depuis_azure.txt'
 ```
@@ -484,16 +472,16 @@ azureuser@SampleVM:~$ cat test-vm_depuis_azure.txt
 Test depuis la VM
 ```
 
-- Déterminez comment azcopy login --identity vous a authentifié :
-L'authentification azcopy login --identity fonctionne grâce au service de métadonnées d'instance Azure (IMDS), qui est une API REST accessible uniquement depuis une VM Azure.
-Quand vous lancez la commande, azcopy envoie une requête à une adresse IP spéciale (169.254.169.254) sur la VM. L'IMDS, qui reçoit cette requête, génère un jeton d'accès JWT (JSON Web Token) au nom de l'identité managée de la VM. Ce jeton est ensuite présenté par azcopy aux services Azure (comme le stockage) pour prouver son identité sans avoir besoin de secret ou de mot de passe. C'est un peu comme si la VM avait sa propre carte d'identité fournie par Azure.
+- Determine how azcopy login --identity authenticated you:
+Authentication azcopy login --identity works thanks to the Azure (IMDS) metadata service, which is a REST API accessible only from an Azure VM.
+When you launch the command, Azcopy sends a request to a special IP address (<public_ip_address>) on the VM. The IMDS, which receives this request, generates an access token JWT (JSON Web Token) in the name of the managed identity of the VM. This token is then presented by Azcopy to the Azure services (such as storage) to prove his identity without the need for secrets or password. It is a bit as if the VM had its own identity card provided by Azure.
 
-- Requêtez un JWT d'authentification auprès du service que vous venez d'identifier, manuellement :
+- Request an authentication jwt to the service you have just identified, manually:
 ```bash
-azureuser@SampleVM:~$ curl 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/' -H Metadata:true
+azureuser@SampleVM:~$ curl 'http://<public_ip_address>/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/' -H Metadata:true
 {
-  "access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkpZaEFjVFBNWl9MWDZEQmxPV1E3SG4wTmVYRSIsImtpZCI6IkpZaEFjVFBNWl9MWDZEQmxPV1E3SG4wTmVYRSJ9.eyJhdWQiOiJodHRwczovL3N0b3JhZ2UuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzQxMzYwMGNmLWJkNGUtNGM3Yy04YTYxLTY5ZTczY2RkZjczMS8iLCJpYXQiOjE3NTc5NDIyNTgsIm5iZiI6MTc1Nzk0MjI1OCwiZXhwIjoxNzU4MDI4OTU4LCJhaW8iOiJrMlJnWVBBcDNHcGRvWktlbkN2d2NSR0xPN01XQUE9PSIsImFwcGlkIjoiNmExM2YxODItMzJmZS00ZmYyLWFiZTEtYzUwM2JiY2NmNzExIiwiYXBwaWRhY3IiOiIyIiwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNDEzNjAwY2YtYmQ0ZS00YzdjLThhNjEtNjllNzNjZGRmNzMxLyIsImlkdHlwIjoiYXBwIiwib2lkIjoiYzI3Y2NiOWEtMTI4Yi00YWU3LWI3YmQtODhkMTA4NGU3ZjYwIiwicmgiOiIxLkFUc0F6d0EyUVU2OWZFeUtZV25uUE4zM01ZR21CdVRVODZoQ2tMYkNzQ2xKZXZFVkFRQTdBQS4iLCJzdWIiOiJjMjdjY2I5YS0xMjhiLTRhZTctYjdiZC04OGQxMDg0ZTdmNjAiLCJ0aWQiOiI0MTM2MDBjZi1iZDRlLTRjN2MtOGE2MS02OWU3M2NkZGY3MzEiLCJ1dGkiOiIwNFJLNS1Ram4wLVNMWm5iQS0tUUFBIiwidmVyIjoiMS4wIiwieG1zX2Z0ZCI6IjJLWTBHLTVVNGFEUTN6OFlTbC1wSnVFVERDTWtjNlAtTFA0aEZwYVdCQzhCZFd0emIzVjBhQzFrYzIxeiIsInhtc19pZHJlbCI6IjcgMjYiLCJ4bXNfbWlyaWQiOiIvc3Vic2NyaXB0aW9ucy81NzgwOWNkMC0xZjE2LTRjNWYtYmNiMC0yNWM4MjliNmVkNzUvcmVzb3VyY2Vncm91cHMvc2FuZGJveC1yZzIvcHJvdmlkZXJzL01pY3Jvc29mdC5Db21wdXRlL3ZpcnR1YWxNYWNoaW5lcy9TYW1wbGVWTSIsInhtc19yZCI6IjAuNDJMbFlCSml0QllTNGVBVUVsRHA5YlZidWUyMjc2UXY2Ym95bWsxNlFGRU9JWUhHWld4UHJueGU0VFJoMjZFTm1wNVZId0UiLCJ4bXNfdGRiciI6IkVVIn0.e0-7uilxznhFfzTb2r2nK86RpvSZ-Yeickk3-VqCCBxi_q3pGUeyC2a4dmlfEosWxPAqRSRozEAHfP7CesmKqIZmIUdt-YwvVaYy23nxnZKgk34sY4ETGgOZVW1bgUjMIGY3JJdkG9ND1xPB1apa6NK_jt3enmdtP_gweLt6IyLQVOhpjkQ0o1ql_nGkb8ZDimzCCMPwRFizGFJEHtLPuhytETJQCmOSX1a2ArUyqoy9BeQb2l0t_0hXmmncH9D_6y7P8Dr8BaoD6H7BvjQWjRIPaS_l3Z7GQccep4jgkOaFsZJ6MOcddCHq0wdNjIIOUKyrVR-eq2yb9vkFMDOu3g",
-  "client_id":"6a13f182-32fe-4ff2-abe1-c503bbccf711",
+  "access_token":<access_token>,
+  "client_id":<client_id>,
   "expires_in":"86400",
   "expires_on":"1758028958",
   "ext_expires_in":"86399",
@@ -502,24 +490,24 @@ azureuser@SampleVM:~$ curl 'http://169.254.169.254/metadata/identity/oauth2/toke
   "token_type":"Bearer"
   }
 ```
-- Comment l'IP 169.254.169.254 est-elle joignable ?
-Cette adresse IP est une adresse link-local non routable sur internet. Elle n'existe pas sur votre réseau virtuel (VNet).
-Le "truc", c'est que l'hyperviseur Azure (le logiciel qui gère votre VM sur le serveur physique) intercepte tout le trafic destiné à cette adresse IP spécifique. Au lieu d'envoyer la requête sur le réseau, il la redirige directement vers le service IMDS qui tourne sur l'hôte physique.
-La table de routage de la VM contient une route par défaut qui envoie tout le trafic inconnu vers la passerelle du VNet, mais elle a aussi une route système implicite pour 169.254.169.254/32 qui pointe vers l'hôte. C'est ce qui garantit que la requête ne quitte jamais l'environnement sécurisé de l'hôte, rendant ce mécanisme très sûr.
+- How is the IP <public_ip_address> can it be reached?
+This IP address is an unrelated Link-Local address on the Internet. It does not exist on your virtual network (VNET).
+The "thing" is that the Azure hypervisor (the software that manages your VM on the physical server) intercepts all the traffic intended for this specific IP address. Instead of sending the request to the network, he redirects it directly to the IMDS service which turns on the physical host.
+The VM routing table contains a default road which sends all the unknown traffic to the Vnet bridge, but it also has an implicit system for <public_ip_Address>/32 which points to the host. This is what guarantees that the request never leaves the secure environment of the host, making this mechanism very safe.
 
 - az vm nic list --resource-group sandbox-rg2 --vm-name SampleVM
 
 ### Monitoring (monitoring CPU et RAM)
 
-- Le groupe d'actions (azurerm_monitor_action_group) : Il définit quoi faire quand une alerte se déclenche. Ici, c'est "envoyer un email".
+- The Action Group (azurerm_monitor_action_group) : He defines what to do when an alert is triggered. Here is "sending an email".
 
-- La règle d'alerte (azurerm_monitor_metric_alert) : Elle lie une ressource (votre VM) à une condition (CPU > 70%) et à un groupe d'actions.
+- The alert rule (azurerm_monitor_metric_alert) : It links a resource (your VM) to a condition (CPU> 70%) and a group of shares.
 
 - curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 - CPU : az monitor metric-alert list --resource-group sandbox-rg2 --output table
 - RAM : az monitor scheduled-query list --resource-group sandbox-rg2 --output table
 
-- déclenchement d'un stress de la VM : 
+- Trigger of a stress of the VM : 
 sudo apt update && sudo apt install stress-ng -y
 stress-ng --cpu 1 --cpu-load 90 --timeout 10m
 stress-ng --vm 1 --vm-bytes 1500M --timeout 10m
@@ -536,5 +524,5 @@ stress-ng --vm 1 --vm-bytes 1500M --timeout 10m
 
 ### Vault
 - az keyvault secret show \
-  --name "<Le nom de votre secret>" \
-  --vault-name "<Le nom de votre Key Vault>"
+  --name "kv-tp2-1n4hf7cq" \
+  --vault-name "tp2-super-secret-1n4hf7cq"

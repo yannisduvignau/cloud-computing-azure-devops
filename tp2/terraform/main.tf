@@ -4,15 +4,14 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.80.0"
+      version = ">= 3.100.0"
     }
   }
 }
 
 provider "azurerm" {
   features {}
-  skip_provider_registration = true
-  # subscription_id = var.subscription_id
+  subscription_id = var.subscription_id
 }
 
 # Resource group
@@ -110,18 +109,4 @@ resource "azurerm_virtual_machine_extension" "log_analytics_agent" {
   })
 
   depends_on = [azurerm_log_analytics_workspace.law]
-}
-
-
-
-resource "random_string" "main" {
-  length  = 6
-  special = false
-  upper   = false
-}
-
-
-resource "random_integer" "suffix" {
-  min = 1000
-  max = 9999
 }

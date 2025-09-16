@@ -28,14 +28,14 @@ fi
 
 # Check if the resource group exists
 if ! az group show --name "$RESOURCE_GROUP" &> /dev/null; then
-    echo "🛠 Resource group '$RESOURCE_GROUP' does not exist. Creating it..."
+    echo "Resource group '$RESOURCE_GROUP' does not exist. Creating it..."
     az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --verbose
 else
     echo "✅ Resource group '$RESOURCE_GROUP' already exists."
 fi
 
 # Create the VM
-echo "🚀 Creating VM '$VM_NAME' in resource group '$RESOURCE_GROUP'..."
+echo "Creating VM '$VM_NAME' in resource group '$RESOURCE_GROUP'..."
 az vm create \
   --resource-group "$RESOURCE_GROUP" \
   --location "$LOCATION" \
@@ -53,7 +53,7 @@ PUBLIC_IP=$(az vm list-ip-addresses \
     --query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" \
     -o tsv)
 
-echo "✅ VM '$VM_NAME' created successfully!"
-echo "🌐 Public IP: $PUBLIC_IP"
+echo "VM '$VM_NAME' created successfully!"
+echo "Public IP: $PUBLIC_IP"
 echo "You can connect with:"
 echo "ssh $ADMIN_USERNAME@$PUBLIC_IP"

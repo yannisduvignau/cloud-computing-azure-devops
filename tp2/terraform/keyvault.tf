@@ -7,6 +7,7 @@ resource "azurerm_key_vault" "vault" {
   tenant_id                  = data.azurerm_client_config.current.tenant_id
   sku_name                   = "standard"
   soft_delete_retention_days = 7
+  purge_protection_enabled   = false
 
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
@@ -26,13 +27,8 @@ resource "azurerm_key_vault" "vault" {
   }
 }
 
-resource "random_password" "secret" {
-  length  = 32
-  special = true
-}
-
 resource "azurerm_key_vault_secret" "vault_secret" {
-  name         = "${var.prefix}-super-secret"
+  name         = "${var.prefix}-super-secret-${random_string.main.result}"
   value        = random_password.secret.result
   key_vault_id = azurerm_key_vault.vault.id
 }

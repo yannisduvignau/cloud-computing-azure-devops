@@ -46,15 +46,10 @@ REGION_KEY ?= uksouth
 SSH_ED25519_SCRIPT = $(SCRIPTS_PATH)/setup_ssh_ed25519.sh
 ALLOW_SSH_ED25519_RIGHTS = chmod +x $(SSH_ED25519_SCRIPT)
 
-SSH_KEY_PATH = $(HOME)/.ssh
-SSH_KEY_NAME = id_rsa_terraform
-SSH_KEY_COMMENT = terraform_vm
-SSH_RSA_SCRIPT = ssh-keygen -t rsa -b 4096 -f $(SSH_KEY_PATH)/$(SSH_KEY_NAME) -C "$(SSH_KEY_COMMENT)"
+LIST_AZURE_SCRIPT = $(SCRIPTS_PATH)/list_all.sh
+ALLOW_LIST_RIGHTS = chmod +x $(LIST_AZURE_SCRIPT)
 
-SSH_AGENT_SCRIPT = $(SCRIPTS_PATH)/start_ssh_agent.sh
-ALLOW_AGENT_RIGHTS = chmod +x $(SSH_AGENT_SCRIPT)
-
-CLEAR_AZURE_SCRIPT = $(SCRIPTS_PATH)/delete_all_resource_groups.sh
+CLEAR_AZURE_SCRIPT = $(SCRIPTS_PATH)/clear.sh
 ALLOW_CLEAR_RIGHTS = chmod +x $(CLEAR_AZURE_SCRIPT)
 
 AZ_CLI_SCRIPT = $(SCRIPTS_PATH)/create_azure_vm.sh
@@ -94,34 +89,20 @@ help-with-categories:
 ## ########################################################################## ##
 
 ### TOOLS ###
-# Delete all Azure resource groups in the current subscription
-delete-resources-azure:
+# Delete all Azure resource in the current subscription
+clear-azure:
 	@echo "🗑️ Deleting all Azure resource groups..."
 	$(ALLOW_CLEAR_RIGHTS) && $(CLEAR_AZURE_SCRIPT)
 
-# Generate RSA SSH keys for Terraform
-generate-ssh-keys-rsa:
-	@echo "🔑 Generating RSA SSH keys for Terraform..."
-	$(SSH_RSA_SCRIPT)
+# List all Azure resource in the current subscription
+list-azure:
+	@echo "📝 List all Azure resource groups..."
+	$(ALLOW_LIST_RIGHTS) && $(LIST_AZURE_SCRIPT)
 
 # Generate ED25519 SSH keys
-generate-ssh-keys-ed25519:
+generate-ssh-keys:
 	@echo "🔑 Generating ED25519 SSH keys..."
 	$(ALLOW_SSH_ED25519_RIGHTS) && $(SSH_ED25519_SCRIPT)
-
-# Start SSH agent and add keys
-start-ssh-agent:
-	@echo "🚀 Starting SSH agent..."
-	$(ALLOW_AGENT_RIGHTS) && $(SSH_AGENT_SCRIPT)
-
-# Connect to the VM via SSH (use ssh-agent or explicit RSA key if provided)
-exec-ssh:
-	@echo "🔌 Connecting to VM at $(PUBLIC_IP_ADDRESS) as $(AZ_USER)..."
-	@if [ "$(KEY)" = "rsa" ]; then \
-		ssh -i $(SSH_KEY_PATH)/$(SSH_KEY_NAME) $(AZ_USER)@$(PUBLIC_IP_ADDRESS); \
-	else \
-		ssh $(AZ_USER)@$(PUBLIC_IP_ADDRESS); \
-	fi
 
 ## ########################################################################## ##
 ##                                 AZURE CLI                                  ##
@@ -173,8 +154,8 @@ get-subscription-info:
 ## PHONY targets grouped by category
 ## ########################################################################## ##
 .PHONY: \
-	delete-resources-azure \
-	generate-ssh-keys-rsa \
+	clear-azure \
+	list-azure \
 	generate-ssh-keys-ed25519 \
 	start-ssh-agent \
 	exec-ssh \

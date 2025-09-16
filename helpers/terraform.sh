@@ -22,7 +22,7 @@ pushd "$TF_DIR" > /dev/null
 
 # Initialize Terraform (reconfigure in case backend changed)
 echo "🚀 Initializing Terraform in $TF_DIR..."
-terraform init -reconfigure
+terraform init -reconfigure -upgrade
 
 # Generate plan
 echo "📝 Creating Terraform plan..."

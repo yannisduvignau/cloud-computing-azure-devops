@@ -38,12 +38,12 @@ variable "subscription_id" {
 }
 
 variable "dns_label" {
-  description = "Label DNS pour la IP publique (doit être en minuscules, chiffres et tirets, unique au sein du cluster régional)"
+  description = "DNS label for public IP (must be in tiny, figures and dashes, unique within the regional cluster)"
   type        = string
   default     = ""
   validation {
     condition     = var.dns_label == "" || can(regex("^[a-z0-9-]{3,63}$", var.dns_label))
-    error_message = "dns_label doit être vide ou respecter ^[a-z0-9-]{3,63}$ (minuscules, chiffres et tirets)."
+    error_message = "dns_label must be empty or respect ^[a-z0-9-]{3,63}$ (tiny, figures and dashes)."
   }
 }
 
