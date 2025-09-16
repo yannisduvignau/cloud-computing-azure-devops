@@ -46,6 +46,9 @@ REGION_KEY ?= uksouth
 SSH_ED25519_SCRIPT = $(SCRIPTS_PATH)/setup_ssh_ed25519.sh
 ALLOW_SSH_ED25519_RIGHTS = chmod +x $(SSH_ED25519_SCRIPT)
 
+SECRET_AZURE_SCRIPT = $(SCRIPTS_PATH)/get_secret.sh
+ALLOW_SECRET_RIGHTS = chmod +x $(SECRET_AZURE_SCRIPT)
+
 LIST_AZURE_SCRIPT = $(SCRIPTS_PATH)/list_all.sh
 ALLOW_LIST_RIGHTS = chmod +x $(LIST_AZURE_SCRIPT)
 
@@ -98,6 +101,11 @@ clear-azure:
 list-azure:
 	@echo "📝 List all Azure resource groups..."
 	$(ALLOW_LIST_RIGHTS) && $(LIST_AZURE_SCRIPT)
+
+# Get secrets from Azure
+get-secret-azure:
+	@echo "📝 Get a secret..."
+	$(ALLOW_SECRET_RIGHTS) && $(SECRET_AZURE_SCRIPT)
 
 # Generate ED25519 SSH keys
 generate-ssh-keys:

@@ -547,6 +547,36 @@ stress-ng --vm 1 --vm-bytes 1500M --timeout 10m
 ```
 
 ### Vault
-- az keyvault secret show \
-  --name "kv-tp2-1n4hf7cq" \
-  --vault-name "tp2-super-secret-1n4hf7cq"
+```bash
+azureuser@SampleVM-TP2:~$ az keyvault list --query "[].name" -o tsv
+kv-tp2-j0w9
+```
+```bash
+azureuser@SampleVM-TP2:~$ az keyvault secret list --vault-name "kv-tp2-j0w9" --query "[].name" -o tsv
+tp2-super-secret-j0w9
+```
+```bash
+azureuser@SampleVM-TP2:~$ az keyvault secret show --name "tp2-super-secret-j0w9" --vault-name "kv-tp2-j0w9"
+{
+  "attributes": {
+    "created": "2025-09-16T12:24:02+00:00",
+    "enabled": true,
+    "expires": null,
+    "notBefore": null,
+    "recoverableDays": 7,
+    "recoveryLevel": "CustomizedRecoverable+Purgeable",
+    "updated": "2025-09-16T12:24:02+00:00"
+  },
+  "contentType": "",
+  "id": "https://kv-tp2-j0w9.vault.azure.net/secrets/tp2-super-secret-j0w9/5247fd9548124b5bb20c88ee38a23a2d",
+  "kid": null,
+  "managed": null,
+  "name": "tp2-super-secret-j0w9",
+  "tags": {},
+  "value": "Yo*_u(ecPzgqgS1)%w:pdx6<VPj6]BaV"
+}
+```
+
+```bash
+make get-secret-azure
+```
