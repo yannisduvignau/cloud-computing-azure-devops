@@ -213,27 +213,32 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
   },
   "etag": "\"1\"",
   "extensionsTimeBudget": "PT1H30M",
-  "fqdns": "",
+  "fqdns": "mon-vm-toto.uksouth.cloudapp.azure.com",
   "hardwareProfile": {
     "vmSize": "Standard_B1s"
   },
-  "id": "/subscriptions/<subscription_id>/resourceGroups/sandbox-rg2/providers/Microsoft.Compute/virtualMachines/SampleVM",
+  "id": "/subscriptions/<subscription_id>/resourceGroups/sandbox-rg-tp2/providers/Microsoft.Compute/virtualMachines/SampleVM-TP2",
+  "identity": {
+    "principalId": "<principal_identity_id>",
+    "tenantId": "<tenant_identity_id>",
+    "type": "SystemAssigned"
+  },
   "location": "uksouth",
-  "macAddresses": "60-45-BD-14-11-17",
-  "name": "SampleVM",
+  "macAddresses": "<mac_adress>",
+  "name": "SampleVM-TP2",
   "networkProfile": {
     "networkInterfaces": [
       {
-        "id": "/subscriptions/<subscription_id>/resourceGroups/sandbox-rg2/providers/Microsoft.Network/networkInterfaces/SampleVM-nic",
+        "id": "/subscriptions/<subscription_id>/resourceGroups/sandbox-rg-tp2/providers/Microsoft.Network/networkInterfaces/SampleVM-TP2-nic",
         "primary": true,
-        "resourceGroup": "sandbox-rg2"
+        "resourceGroup": "sandbox-rg-tp2"
       }
     ]
   },
   "osProfile": {
     "adminUsername": "azureuser",
     "allowExtensionOperations": true,
-    "computerName": "SampleVM",
+    "computerName": "SampleVM-TP2",
     "linuxConfiguration": {
       "disablePasswordAuthentication": true,
       "patchSettings": {
@@ -244,7 +249,7 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDAIpXDkt4YH30PB31AdSO/hP1J+oUrNm8AcSFE75ZreaEAsBx3amMTtQ9XkXIAO6HKdecuEFp8w3pBP5yaWqeBH+xXXQ5ImMEOUihA9CJ4ioE2Fyfvwv4JX4SJ1jG6Yt9Rj2owqD58IdeSlmbIIXIY+bLp4BLg82q0ml6sSy4vjSuheFvlpgDAYC1TGfKO6oRmVJLtuD2teFYascB3ieILg7qNU9qjWwXk1MTgyh1nci5GesQjHDFl9umugp0ac2fE9NHVZykA5T2XBHq5Rqy6wRH1QIHAuCDQauou0iJgMEljFDGnl8o6eNcxCEtxgO1Gfj5GnafKyefrPquZy9SkiWJi3Tn1YepZl14WU7+/npSbXFRHuS+6/D9i8SL+1fttcd29Srje+IEfrAgylrh6WXe5JtZIC37BK261R+fjLah7zCwnA/dne6h9jdFw8IHTqydVtFgYcr8cjAAjyZLoVoSs03GYi/0ueYrX+Gmv2c5vhSs6sTLwQCc5G21j+Fl6+DOmzT6/8cj4VCv4YFf+EN/2DglsEE0CegWoiaPXjx3tDZTbAvwnfTcmSHvtCOSDtPPtCO8ScMNgfjGOozfkUP8qtM1WOI2+I9p3+Xtf0AT28iqreDx1B6agsEzIql4GI9sOtuvEYrcweMzL/2VT195z7ccRZ/ycwKMKcRrXlw== terraform_vm\n",
+            "keyData": "<ssh_key>",
             "path": "/home/azureuser/.ssh/authorized_keys"
           }
         ]
@@ -257,8 +262,27 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
   "priority": "Regular",
   "privateIps": "10.0.1.4",
   "provisioningState": "Succeeded",
-  "publicIps": "<public_ip_address>",
-  "resourceGroup": "sandbox-rg2",
+  "publicIps": "<public_ip>",
+  "resourceGroup": "sandbox-rg-tp2",
+  "resources": [
+    {
+      "autoUpgradeMinorVersion": true,
+      "enableAutomaticUpgrade": false,
+      "id": "/subscriptions/<subscription_id>/resourceGroups/sandbox-rg-tp2/providers/Microsoft.Compute/virtualMachines/SampleVM-TP2/extensions/OmsAgentForLinux",
+      "location": "uksouth",
+      "name": "OmsAgentForLinux",
+      "provisioningState": "Succeeded",
+      "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+      "resourceGroup": "sandbox-rg-tp2",
+      "settings": {
+        "workspaceId": "<workspace_setting_id>"
+      },
+      "suppressFailures": false,
+      "tags": {},
+      "typeHandlerVersion": "1.14",
+      "typePropertiesType": "OmsAgentForLinux"
+    }
+  ],
   "storageProfile": {
     "dataDisks": [],
     "imageReference": {
@@ -274,8 +298,8 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
       "deleteOption": "Detach",
       "diskSizeGB": 30,
       "managedDisk": {
-        "id": "/subscriptions/<subscription_id>/resourceGroups/sandbox-rg2/providers/Microsoft.Compute/disks/vm-os-disk",
-        "resourceGroup": "sandbox-rg2",
+        "id": "/subscriptions/<subscription_id>/resourceGroups/sandbox-rg-tp2/providers/Microsoft.Compute/disks/vm-os-disk",
+        "resourceGroup": "sandbox-rg-tp2",
         "storageAccountType": "Standard_LRS"
       },
       "name": "vm-os-disk",
@@ -284,9 +308,9 @@ azureuser@SampleVM:~$ systemctl status cloud-init.service
     }
   },
   "tags": {},
-  "timeCreated": "2025-09-06T11:01:48.9358165+00:00",
+  "timeCreated": "2025-09-16T12:21:38.6381969+00:00",
   "type": "Microsoft.Compute/virtualMachines",
-  "vmId": "532e5f29-8b51-4372-a48c-0a9aaa180daf"
+  "vmId": "<vm_id>"
 }
 ```
 - sudo nano /etc/ssh/sshd_config
