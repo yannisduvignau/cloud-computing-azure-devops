@@ -275,3 +275,117 @@ On crée un réseau virtuel de niveau 2 par-dessus notre réseau physique. Ce r�
 
     sudo firewall-cmd --reload
 ```
+
+10. Utiliser la plateforme
+ - Tester la connectivité à la VM
+Le test le plus simple est de pinger l'IP privée de la VM depuis son hyperviseur, kvm1.one.
+```bash
+    [user@frontend ~]$ ssh user@kvm1.one
+    [user@kvm1 ~]$ ping -c 4 10.220.220.100
+```
+
+ - Connexion SSH Sécurisée (via Jump Host)
+```bash
+    [user@frontend ~]$ sudo su - oneadmin
+```
+```bash
+    [oneadmin@frontend ~]$ eval $(ssh-agent)
+    [oneadmin@frontend ~]$ ssh-add
+    Identity added: /var/lib/one/.ssh/id_rsa (oneadmin@frontend.one)
+```
+```bash
+    [oneadmin@frontend ~]$ ssh -J kvm1.one root@10.220.220.100
+```
+
+ - Activer l'Accès Internet
+```bash
+    [root@localhost ~]# ip route add default via 10.220.220.201
+```
+```bash
+    [root@localhost ~]# ping -c 4 1.1.1.1
+    PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.
+    64 bytes from 1.1.1.1: icmp_seq=1 ttl=58 time=1.82 ms
+    ...
+```
+
+11. Ajout du Deuxième Nœud (kvm2.one)
+ - Préparation de l'Hôte (kvm2.one)
+Ajout des dépôts (OpenNebula, EPEL, MySQL) et Installation des paquets
+```bash
+    sudo dnf install -y https://downloads.opennebula.io/repo/opennebula-6.8.0-1.el9.x86_64.rpm
+    sudo dnf install -y epel-release
+    sudo dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+
+    sudo dnf install -y opennebula-node-kvm mysql-community-server genisoimage
+    sudo systemctl enable --now libvirtd.service
+```
+Configuration du pare-feu
+```bash
+    sudo firewall-cmd --add-port=22/tcp --permanent
+    sudo firewall-cmd --add-port=8472/udp --permanent
+    sudo firewall-cmd --reload
+```
+
+ - Configuration SSH (depuis frontend.one)
+Le frontend doit pouvoir piloter ce nouveau nœud sans mot de passe.
+```bash
+    [oneadmin@frontend ~]$ ssh-copy-id oneadmin@kvm2.one
+    [oneadmin@frontend ~]$ ssh-keyscan kvm2.one >> ~/.ssh/known_hosts
+
+    [oneadmin@frontend ~]$ ssh oneadmin@kvm2.one hostname
+```
+
+ - Configuration du Bridge VXLAN (kvm2.one)
+```bash
+    sudo nmcli con add type bridge con-name vxlan_bridge ifname vxlan_bridge
+    sudo nmcli con mod vxlan_bridge ipv4.addresses 10.220.220.202/24 ipv4.method manual
+    sudo nmcli con up vxlan_bridge
+
+    sudo firewall-cmd --zone=public --add-interface=vxlan_bridge --permanent
+    sudo firewall-cmd --zone=public --add-masquerade --permanent
+    sudo firewall-cmd --reload
+```
+
+ - Ajout dans la WebUI
+Allez dans Infrastructure > Hosts.
+Cliquez sur le + vert.
+Entrez le hostname kvm2.one et cliquez sur Create.
+Attendez que son statut passe à ON.
+
+ - Déploiement d'une VM sur le Deuxième Nœud
+ - Test de Connectivité entre les VMs
+C'est le moment de vérité. Nous allons vérifier que vm1 (sur kvm1.one) peut pinger vm2 (sur kvm2.one).
+Récupérez les adresses IP des deux VMs depuis la WebUI.
+vm1 (sur kvm1) : 10.220.220.100
+vm2 (sur kvm2) : 10.220.220.101 (ou l'IP suivante disponible)
+Connectez-vous en SSH à la première VM (vm1).
+```bash
+    [oneadmin@frontend ~]$ ssh -J kvm1.one root@10.220.220.100
+```
+Depuis l'intérieur de vm1, pingez vm2.
+```bash
+    [root@localhost ~]# ping 10.220.220.101
+    PING 10.220.220.101 (10.220.220.101) 56(84) bytes of data.
+    64 bytes from 10.220.220.101: icmp_seq=1 ttl=64 time=0.985 ms
+    64 bytes from 10.220.220.101: icmp_seq=2 ttl=64 time=0.754 ms
+    ...
+```
+
+ - Inspection du Trafic (tcpdump)
+Installez tcpdump sur l'un de vos nœuds KVM, par exemple kvm2.one.
+```bash
+    sudo dnf install -y tcpdump
+```
+Lancez un ping continu depuis vm1 vers vm2.
+Ouvrez deux terminaux SSH sur kvm2.one.
+Terminal 1 : Capture sur l'interface physique (enp0s3)
+On écoute le trafic VXLAN entre les deux hyperviseurs.
+```bash
+    sudo tcpdump -i enp0s3 -n host 10.3.1.11 and udp port 8472
+```
+Terminal 2 : Capture sur le bridge virtuel (vxlan_bridge)
+On écoute le trafic tel que les VMs le voient.
+```bash
+    sudo tcpdump -i vxlan_bridge -n icmp
+```
+Cette analyse démontre parfaitement le principe de l'overlay : le trafic réel des VMs (ICMP) est enveloppé dans un tunnel UDP pour traverser le réseau physique, garantissant l'isolation et la flexibilité de votre cloud privé.
