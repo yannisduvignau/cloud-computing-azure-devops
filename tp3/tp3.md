@@ -131,6 +131,30 @@ Le fichier /etc/hosts permet de faire correspondre des noms d'hôtes à des adre
 
 7. Configuration du Frontend (frontend.one)
 Le frontend est le cerveau de notre infrastructure. Il héberge les services principaux d'OpenNebula, la base de données et l'interface web (Sunstone).
+ - Installation et Préparation de la Base de Données : OpenNebula requiert une base de données pour fonctionner. Nous allons installer et configurer MySQL.
+```bash
+    sudo dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-5.noarch.rpm
+    sudo dnf install -y mysql-community-server
+```
+
+ - Démarrer et Sécuriser MySQL
+```bash
+    sudo systemctl enable --now mysqld
+
+    TEMP_PASS=$(sudo grep 'temporary password' /var/log/mysqld.log | sed 's/.*root@localhost: //')
+    echo "Mot de passe temporaire de root : ${TEMP_PASS}"
+
+    mysql -u root -p
+```
+```sql
+    ALTER USER 'root'@'localhost' IDENTIFIED BY 'votre_mot_de_passe_root_solide';
+    CREATE USER 'oneadmin' IDENTIFIED BY 'mot_de_passe_oneadmin_solide_pour_db';
+    CREATE DATABASE opennebula;
+    GRANT ALL PRIVILEGES ON opennebula.* TO 'oneadmin';
+    SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+    EXIT;
+```
+
  - Installation des Dépôts et Paquets OpenNebula
 
 Sur frontend.one uniquement :
@@ -141,26 +165,40 @@ Sur frontend.one uniquement :
 opennebula-server : Le coeur du service (démon oned)
 opennebula-sunstone : L'interface web
 
- - Configuration du Pare-feu (firewalld) : Ouvrir le port 9869/tcp pour Sunstone
+ - Connecter OpenNebula à la Base de Données
+Éditez le fichier /etc/one/oned.conf et remplacez la section DB par celle-ci, en utilisant le mot de passe que vous avez créé pour l'utilisateur oneadmin de la base de données : 
+```conf
+    DB = [ backend = "mysql",
+       server  = "localhost",
+       port    = 3306,
+       user    = "oneadmin",
+       passwd  = "mot_de_passe_oneadmin_solide_pour_db",
+       db_name = "opennebula" ]
+```
+
+ - Créer l'Utilisateur pour l'Interface Web
+Plutôt que de simplement lire un fichier généré, nous allons définir explicitement les identifiants de l'administrateur de l'interface web.
+```bash
+    sudo su - oneadmin -c "echo 'oneadmin:mot_de_passe_solide_pour_webui' > /var/lib/one/.one/one_auth"
+```
+
+ - Configuration du Pare-feu (firewalld) : Ouvrir les ports pour l'interface web Sunstone, l'API et le monitoring
 ```bash
     sudo firewall-cmd --add-port=9869/tcp --permanent
+
+    sudo firewall-cmd --add-port=2633/tcp --permanent
+    sudo firewall-cmd --add-port=4124/tcp --permanent
+    sudo firewall-cmd --add-port=4124/udp --permanent
+
     sudo firewall-cmd --reload
 ```
 
  - Démarrage et Activation des Services (Activation au redémarrage de la machine)
 ```bash
-    sudo systemctl start opennebula.service
-    sudo systemctl start opennebula-sunstone.service
-
-    sudo systemctl enable opennebula.service
-    sudo systemctl enable opennebula-sunstone.service
+    sudo systemctl enable --now opennebula.service
+    sudo systemctl enable --now opennebula-sunstone.service
 ```
 
-OpenNebula crée un utilisateur système oneadmin pour gérer l'ensemble de l'infrastructure. Le mot de passe initial pour l'interface web est stocké dans un fichier.
- - Accès Initial et Sécurité : Récupérer le mot de passe pour l'utilisateur "oneadmin"
-```bash
-    cat /var/lib/one/.one/one_auth
-```
 
 8. Configuration du Nœud KVM (kvm1.one)
 Ce nœud fournira la puissance de calcul pour faire tourner nos VMs. Le frontend le pilotera via SSH.
@@ -170,59 +208,70 @@ Sur kvm1.one uniquement :
 ```bash
     sudo dnf install -y https://downloads.opennebula.io/repo/opennebula-6.8.0-1.el9.x86_64.rpm
 
-    sudo dnf install -y qemu-kvm libvirt-daemon-kvm opennebula-node-kvm
+    sudo dnf install -y epel-release
+
+    sudo dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+
+    sudo dnf install -y opennebula-node-kvm mysql-community-server genisoimage
 
     sudo systemctl start libvirtd.service
     sudo systemctl enable libvirtd.service
 ```
 Installation des paquets de virtualisation et de l'agent OpenNebula
-qemu-kvm & libvirt-daemon-kvm : Le nécessaire pour l'hyperviseur
-opennebula-node-kvm : L'agent qui permet au frontend de piloter ce noeud
+opennebula-node-kvm : C'est le paquet clé. Il installe l'agent OpenNebula ainsi que qemu-kvm et libvirt, le nécessaire pour l'hyperviseur.
+mysql-community-server : Libs requises par l'agent.
+genisoimage : Outil utilisé pour créer les images de contexte des VMs.
+
+ - Configuration Système et Sécurité
+Ouverture du Pare-feu : On configure firewalld sur kvm1.one pour n'autoriser que les communications strictement nécessaires.
+```bash
+    sudo firewall-cmd --add-port=22/tcp --permanent
+    sudo firewall-cmd --add-port=8472/udp --permanent
+    sudo firewall-cmd --reload
+```
 
  - Configuration de l'accès SSH (Très Important)
-Sur frontend.one, copiez la clé publique de l'utilisateur oneadmin:
+Passez sur frontend.one et devenez l'utilisateur oneadmin : 
 ```bash
-sudo su - oneadmin -c "cat ~/.ssh/id_rsa.pub"
+    ssh user@frontend.one
+```
+```bash
+    [user@frontend ~]$ sudo su - oneadmin
+    [oneadmin@frontend ~]$ ssh-copy-id oneadmin@kvm1.one
+```
+Le système vous demandera une seule et unique fois le mot de passe de l'utilisateur oneadmin sur kvm1.one pour autoriser la copie.
+
+Pré-approuvez l'empreinte de l'hôte pour éviter la demande de confirmation de connexion.
+```bash
+    [oneadmin@frontend ~]$ ssh-keyscan kvm1.one >> ~/.ssh/known_hosts
 ```
 
-Le frontend doit pouvoir se connecter en SSH au nœud KVM en tant que oneadmin sans mot de passe, en utilisant une authentification par clé.
-Sur kvm1.one, ajoutez cette clé au fichier des clés autorisées pour oneadmin :
+Vérification finale. La commande suivante doit maintenant s'exécuter instantanément et retourner le nom d'hôte de votre nœud KVM, sans aucune question.
 ```bash
-    sudo install -d -o oneadmin -g oneadmin -m 700 /var/lib/one/.ssh
-    
-    sudo su - oneadmin -c "echo 'ssh-rsa <ssh_key> oneadmin@frontend.one' >> ~/.ssh/authorized_keys"
-
-    sudo chmod 600 /var/lib/one/.ssh/authorized_keys
+    [oneadmin@frontend ~]$ ssh oneadmin@kvm1.one hostname
 ```
 
-Sur frontend.one, testez la connexion :
+9. Configuration du Réseau Virtuel VXLAN
+ - Création du Réseau Virtuel (via WebUI)
 ```bash
-    sudo su - oneadmin -c "ssh kvm1.one hostname"
+    Name : Donnez un nom explicite, par exemple vxlan-private-net.
+    Network Mode : Sélectionnez vxlan.
+    Physical device : Indiquez le nom de l'interface réseau de votre hyperviseur qui a une IP statique (ex: enp0s3).
+    Bridge : Nommez le bridge qui sera créé sur l'hôte. Utilisons vxlan_bridge pour la cohérence.
+    First IPv4 address : 10.220.220.100 (une plage privée est recommandée).
+    Size : 50 (cela créera un pool de 50 adresses IP disponibles pour les VMs).
+    NETWORK_ADDRESS : 10.220.220.0
+    NETWORK_MASK : 255.255.255.0
 ```
 
-9. Configuration du Réseau VXLAN (kvm1.one)
+ - Préparation du Bridge Réseau sur l'Hôte (kvm1.one)
 On crée un réseau virtuel de niveau 2 par-dessus notre réseau physique. Ce réseau sera utilisé exclusivement par les VMs pour communiquer entre elles, de manière isolée.
- - Créer le bridge Linux qui servira de switch virtuel pour les VMs
 ```bash
-    sudo nmcli con add type bridge con-name br0 ifname br0
-    sudo nmcli con mod br0 ipv4.addresses 10.220.220.201/24 ipv4.method manual
-```
+    sudo nmcli con add type bridge con-name vxlan_bridge ifname vxlan_bridge
+    sudo nmcli con mod vxlan_bridge ipv4.addresses 10.220.220.201/24 ipv4.method manual
+    sudo nmcli con up vxlan_bridge
+    sudo firewall-cmd --zone=public --add-interface=vxlan_bridge --permanent
+    sudo firewall-cmd --zone=public --add-masquerade --permanent
 
- - Créer l'interface VXLAN
-```bash
-    sudo nmcli con add type vxlan con-name vxlan10 ifname vxlan10 id 10 remote 10.3.1.12 local 10.3.1.11 dev enp0s3 dstport 4789
-```
-ID (VNI) 10 : L'identifiant du réseau virtuel.
-remote 10.3.1.12 : On prépare déjà la communication avec le futur kvm2.one
-destination-port 4789 : Le port standard pour VXLAN
-
- - Attacher l'interface VXLAN au bridge
-```bash
-    sudo nmcli con add type bridge-slave con-name br0-port-vxlan10 ifname vxlan10 master br0
-```
-
- - Activer les nouvelles connexions
-```bash
-    sudo nmcli con up br0
-    sudo nmcli con up br0-port-vxlan10
+    sudo firewall-cmd --reload
 ```
