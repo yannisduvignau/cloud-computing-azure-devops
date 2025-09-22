@@ -147,8 +147,8 @@ Le frontend est le cerveau de l'infrastructure. Il héberge les services princip
     mysql -u root -p
 ```
 ```sql
-    ALTER USER 'root'@'localhost' IDENTIFIED BY 'votre_mot_de_passe_root_solide';
-    CREATE USER 'oneadmin' IDENTIFIED BY '<mot_de_passe_oneadmin_solide_pour_db>';
+    ALTER USER 'root'@'localhost' IDENTIFIED BY '<mot_de_passe_root>';
+    CREATE USER 'oneadmin' IDENTIFIED BY '<mot_de_passe_oneadmin_db>';
     CREATE DATABASE opennebula;
     GRANT ALL PRIVILEGES ON opennebula.* TO 'oneadmin';
     SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
@@ -172,14 +172,14 @@ opennebula-sunstone : L'interface web
        server  = "localhost",
        port    = 3306,
        user    = "oneadmin",
-       passwd  = "<mot_de_passe_oneadmin_solide_pour_db>",
+       passwd  = "<mot_de_passe_oneadmin_db>",
        db_name = "opennebula" ]
 ```
 
  - Créer l'Utilisateur pour l'Interface Web
 Plutôt que de simplement lire un fichier généré, il faut définir explicitement les identifiants de l'administrateur de l'interface web.
 ```bash
-    sudo su - oneadmin -c "echo 'oneadmin:mot_de_passe_solide_pour_webui' > /var/lib/one/.one/one_auth"
+    sudo su - oneadmin -c "echo 'oneadmin:<mot_de_passe_webui>' > /var/lib/one/.one/one_auth"
 ```
 
  - Configuration du Pare-feu (firewalld) : Ouvrir les ports pour l'interface web Sunstone, l'API et le monitoring
